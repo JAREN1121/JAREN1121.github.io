@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Bienvenido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #dbe7f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            color: #333;
+        }
+        a {
+            margin: 10px;
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        a:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Bienvenido al sistema</h1>
+
+<a href="texto.html">Ir a texto</a>
+<a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
+
+<script>
+    // Verificar si usuario está logueado
+    const usuarioLogueado = localStorage.getItem("usuarioLogueado");
+    if(!usuarioLogueado) {
+        window.location.href = "login.html";
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem("usuarioLogueado");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>
