@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Juego Snake con Login y Premio ASCII</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #a8edea, #fed6e3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      text-align: center;
+      width: 90%;
+      max-width: 420px;
+      transition: all 0.3s ease;
+    }
+    h2, h3 {
+      color: #333;
+    }
+    input {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    canvas {
+      background: #222;
+      border: 4px solid #4CAF50;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+    #message {
+      margin-top: 15px;
+      color: #2e7d32;
+      font-size: 18px;
+      font-weight: bold;
+      white-space: pre-wrap;
+      font-family: monospace;
+      text-align: center;
+    }
+    #login, #welcome, #gameArea, #prizeSection {
+      display: none;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+    #prizeSection pre {
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre;
+      line-height: 1;
+      color: #444;
+      margin: 20px auto;
+      max-width: 380px;
+      user-select: none;
+    }
+    #prizeSection p.premio-text {
+      font-weight: bold;
+      font-size: 20px;
+      color: #4CAF50;
+    }
+
+    /* Estilos controles móviles */
+    #mobile-controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #mobile-controls .row {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
+    }
+    #mobile-controls button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      font-size: 24px;
+      border-radius: 10px;
+      margin: 0 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #mobile-controls button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container fade-in">
+    <!-- LOGIN -->
+    <div id="login">
+      <h2>Iniciar Sesión</h2>
+      <input type="text" id="user" placeholder="Usuario" />
+      <input type="password" id="pass" placeholder="Contraseña" />
+      <button onclick="login()">Ingresar</button>
+      <p id="login-msg" class="error"></p>
+    </div>
+
+    <!-- BIENVENIDA -->
+    <div id="welcome">
+      <h2>¡Bienvenido!</h2>
+      <p>Prepárate para jugar una versión fácil de la serpiente 🐍</p>
+      <button onclick="startGame()">Comenzar juego</button>
+    </div>
+
+    <!-- JUEGO -->
+    <div id="gameArea">
+      <h3>Juego de la Serpiente (Fácil)</h3>
+      <canvas id="game" width="400" height="400"></canvas>
+      <div id="message"></div>
+      <div id="mobile-controls">
+        <div class="row">
+          <button onclick="setDirectionMobile('UP')">⬆️</button>
+        </div>
+        <div class="row">
+          <button onclick="setDirectionMobile('LEFT')">⬅️</button>
+          <button onclick="setDirectionMobile('DOWN')">⬇️</button>
+          <button onclick="setDirectionMobile('RIGHT')">➡️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREMIO -->
+    <div id="prizeSection">
+      <h2>🎉 ¡Felicidades! 🎉</h2>
+      <p class="premio-text">Este es tu premio:</p>
+      <pre>
+⠀⠀⠀⠀⠀⠀⠀⣠⣤⣤⣤⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢰⡿⠋⠁⠀⠀⠈⠉⠙⠻⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⣿⠇⠀⢀⣴⣶⡾⠿⠿⠿⢿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⣀⣀⣸⡿⠀⠀⢸⣿⣇⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⣾⡟⠛⣿⡇⠀⠀⢸⣿⣿⣷⣤⣤⣤⣤⣶⣶⣿⠇⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀
+⢀⣿⠀⢀⣿⡇⠀⠀⠀⠻⢿⣿⣿⣿⣿⣿⠿⣿⡏⠀⠀⠀⠀⢴⣶⣶⣿⣿⣿⣆
+⢸⣿⠀⢸⣿⡇⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⣿⡇⣀⣠⣴⣾⣮⣝⠿⠿⠿⣻⡟
+⢸⣿⠀⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⣠⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠉⠀
+⠸⣿⠀⠀⣿⡇⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠉⠀⠀⠀⠀
+⠀⠻⣷⣶⣿⣇⠀⠀⠀⢠⣼⣿⣿⣿⣿⣿⣿⣿⣛⣛⣻⠉⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣿⣀⣀⣀⣼⡿⢿⣿⣿⣿⣿⣿⡿⣿⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠙⠛⠛⠛⠋⠁⠀⠙⠻⠿⠟⠋⠑⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+      </pre>
+      <p class="premio-text">¡Ganaste!</p>
+      <button onclick="reiniciar()">Jugar de nuevo</button>
+    </div>
+  </div>
+
+<script>
+  const USERNAME = "jaren";
+  const PASSWORD = "2006";
+
+  document.getElementById("login").style.display = "block";
+
+  function login() {
+    const user = document.getElementById("user").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+    const msg = document.getElementById("login-msg");
+    if (user === USERNAME && pass === PASSWORD) {
+      msg.textContent = "";
+      document.getElementById("login").style.display = "none";
+      document.getElementById("welcome").style.display = "block";
+    } else {
+      msg.textContent = "Usuario o contraseña incorrectos.";
+    }
+  }
+
+  function startGame() {
+    document.getElementById("welcome").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    initGame();
+  }
+
+  let gameInterval;
+  let direction = "RIGHT";
+
+  function initGame() {
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+    const canvasSize = 400;
+    const totalBoxes = canvasSize / box;
+
+    let snake = [{ x: 5 * box, y: 5 * box }];
+    let food = randomPosition();
+    let score = 0;
+    const winScore = 5;
+
+    document.addEventListener("keydown", setDirection);
+
+    function setDirection(e) {
+      const key = e.key;
+      if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function setDirectionMobile(dir) {
+      if (dir === "LEFT" && direction !== "RIGHT") direction = "LEFT";
+      else if (dir === "UP" && direction !== "DOWN") direction = "UP";
+      else if (dir === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
+      else if (dir === "DOWN" && direction !== "UP") direction = "DOWN";
+    }
+
+    window.setDirectionMobile = setDirectionMobile;
+
+    function randomPosition() {
+      return {
+        x: Math.floor(Math.random() * totalBoxes) * box,
+        y: Math.floor(Math.random() * totalBoxes) * box
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "#4CAF50" : "#8BC34A";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      let head = { ...snake[0] };
+      if (direction === "LEFT") head.x -= box;
+      else if (direction === "RIGHT") head.x += box;
+      else if (direction === "UP") head.y -= box;
+      else if (direction === "DOWN") head.y += box;
+
+      if (head.x >= canvasSize) head.x = 0;
+      else if (head.x < 0) head.x = canvasSize - box;
+      if (head.y >= canvasSize) head.y = 0;
+      else if (head.y < 0) head.y = canvasSize - box;
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        food = randomPosition();
+      } else {
+        snake.pop();
+      }
+
+      snake.unshift(head);
+
+      if (score >= winScore) {
+        clearInterval(gameInterval);
+        showPrize();
+      }
+    }
+
+    gameInterval = setInterval(draw, 200);
+  }
+
+  function showPrize() {
+    document.getElementById("gameArea").style.display = "none";
+    document.getElementById("prizeSection").style.display = "block";
+  }
+
+  function reiniciar() {
+    document.getElementById("prizeSection").style.display = "none";
+    document.getElementById("welcome").style.display = "block";
+  }
+</script>
+</body>
+</html>
